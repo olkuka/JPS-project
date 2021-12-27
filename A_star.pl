@@ -1,10 +1,12 @@
-start_A_star(InitState, PathCost, N) :-
+start_A_star(InitState, PathCost, N, MaxSteps) :-
 	score(InitState, 0, 0, InitCost, InitScore) ,
-	search_A_star( [node(InitState, nil, nil, InitCost , InitScore ) ], [ ], PathCost, N) .
+	search_A_star( [node(InitState, nil, nil, InitCost , InitScore ) ], [ ], PathCost, N, MaxSteps, 0) .
 
 
-search_A_star(Queue, ClosedSet, PathCost, N) :-
+search_A_star(Queue, ClosedSet, PathCost, N, MaxSteps, Step) :-
+    Step < MaxSteps,
 	new_fetch(Nodes, Queue, ClosedSet, N),
+    write("Krok: "), write(Step), nl,
     write("Nodes: "), write(Nodes), nl,
     writeln("Podaj kolejność węzłów"), nl,
     read(OrderList),
@@ -14,16 +16,26 @@ search_A_star(Queue, ClosedSet, PathCost, N) :-
     write("Aktualna kolejka: "), write(Queue), nl,
     write("POBIERAM WĘZEŁ: "), write(Node), nl,
     write("ClosedSet: "), write(ClosedSet), nl,
-	continue(Node, Queue, ClosedSet, PathCost, N).
+    NextStep is Step+1,
+	continue(Node, Queue, ClosedSet, PathCost, N, MaxSteps, NextStep).
 
-continue(node(State, Action, Parent, Cost, _), _, ClosedSet, path_cost(Path, Cost), _ ) :-
+search_A_star(Queue, ClosedSet, PathCost, N, MaxSteps, Step) :-
+    Step >= MaxSteps,
+    write("Osiągnięto maksymalną liczbę kroków. Kontynuować?"), nl,
+    read(Answer),
+    Answer = tak,
+    write(Answer), nl,
+    NewMaxSteps is MaxSteps+1,
+    search_A_star(Queue, ClosedSet, PathCost, N, NewMaxSteps, Step) .
+
+continue(node(State, Action, Parent, Cost, _), _, ClosedSet, path_cost(Path, Cost), _, _, _) :-
 	goal( State), !,
 	build_path(node(Parent, _ ,_ , _ , _ ) , ClosedSet, [Action/State], Path) .
 
-continue(Node, RestQueue, ClosedSet, Path, N)   :-
+continue(Node, RestQueue, ClosedSet, Path, N, MaxSteps, NextStep)   :-
 	expand( Node, NewNodes),
 	insert_new_nodes(NewNodes, RestQueue, NewQueue),
-	search_A_star(NewQueue, [Node | ClosedSet ], Path, N).
+	search_A_star(NewQueue, [Node | ClosedSet ], Path, N, MaxSteps, NextStep).
 
 new_fetch([], [], _, _).
 
