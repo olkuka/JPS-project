@@ -1,36 +1,42 @@
-start_A_star(InitState, PathCost) :-
+start_A_star(InitState, PathCost, N) :-
 	score(InitState, 0, 0, InitCost, InitScore) ,
-	search_A_star( [node(InitState, nil, nil, InitCost , InitScore ) ], [ ], PathCost) .
+	search_A_star( [node(InitState, nil, nil, InitCost , InitScore ) ], [ ], PathCost, N) .
 
 
-search_A_star(Queue, ClosedSet, PathCost) :-
-	fetch(Node, Queue, ClosedSet , RestQueue),
+search_A_star(Queue, ClosedSet, PathCost, N) :-
+	new_fetch(Nodes, Queue, ClosedSet, N),
+    write("Nodes: "), write(Nodes), nl,
+    writeln('Podaj kolejnosc wezlow'), nl,
+    read(OrderList),
+    getNodeNumber(OrderList, NodeNumber),
+    getNElementOfList(Nodes, NodeNumber, Node),
     write("---"),nl, 
     write("Aktualna kolejka: "), write(Queue), nl,
     write("POBIERAM WĘZEŁ: "), write(Node), nl,
     write("ClosedSet: "), write(ClosedSet), nl,
-	continue(Node, RestQueue, ClosedSet, PathCost).
+	continue(Node, Queue, ClosedSet, PathCost, N).
 
-
-continue(node(State, Action, Parent, Cost, _), _, ClosedSet, path_cost(Path, Cost) ) :-
+continue(node(State, Action, Parent, Cost, _), _, ClosedSet, path_cost(Path, Cost), _ ) :-
 	goal( State), !,
 	build_path(node(Parent, _ ,_ , _ , _ ) , ClosedSet, [Action/State], Path) .
 
-continue(Node, RestQueue, ClosedSet, Path)   :-
+continue(Node, RestQueue, ClosedSet, Path, N)   :-
 	expand( Node, NewNodes),
-    write("WĘZŁY POTOMNE WĘZŁA "), write(Node), write(" TO: "), write(NewNodes), nl,
-    write("Wstawiam nowe węzły do kolejki..."), nl,
 	insert_new_nodes(NewNodes, RestQueue, NewQueue),
-	search_A_star(NewQueue, [Node | ClosedSet ], Path).
+	search_A_star(NewQueue, [Node | ClosedSet ], Path, N).
 
+new_fetch([], [], _, _).
 
-fetch(node(State, Action,Parent, Cost, Score),
-			[node(State, Action,Parent, Cost, Score) |RestQueue], ClosedSet, RestQueue) :-
-	\+ member(node(State, _, _, _, _), ClosedSet), !.
+new_fetch([], _, _, 0).
 
-fetch(Node, [ _ |RestQueue], ClosedSet, NewRest) :-
-	fetch(Node, RestQueue, ClosedSet , NewRest).
+new_fetch([node(State, Action,Parent, Cost, Score)|RestResult],
+[node(State, Action,Parent, Cost, Score)|RestQueue], ClosedSet, N) :-
+  \+ member(node(State, _, _, _, _), ClosedSet), !,
+  NN is N-1,
+  new_fetch(RestResult, RestQueue, ClosedSet, NN).
 
+new_fetch([Node|RestResult], [ _ |RestQueue], ClosedSet, N) :-
+  new_fetch([Node|RestResult], RestQueue, ClosedSet , N).
 
 expand(node(State, _ ,_ , Cost, _ ), NewNodes)  :-
 	findall(node(ChildState, Action, State, NewCost, ChildScore) ,
@@ -73,6 +79,21 @@ del([X|R],X,R).
 del([Y|R],X,[Y|R1]) :-
 	X\=Y,
 	del(R,X,R1).
+
+getNodeNumber([Node | _], Node).
+
+getNodeNumber([_|List], Node) :-
+	getNodeNumber(List, Node).
+
+getNElementOfList([], _, []).
+
+getNElementOfList([_|List], NumberOfElement, Y) :-
+	NumberOfElement2 is NumberOfElement - 1,
+	NumberOfElement2 >= 1,
+	getNElementOfList(List, NumberOfElement2, Y).
+
+getNElementOfList([Y|_], 1, Y).
+
 
 succ(a, ab, 2, b).
 succ(b, bf, 3, f).
