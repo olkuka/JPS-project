@@ -6,10 +6,10 @@ start_A_star(InitState, PathCost, N) :-
 search_A_star(Queue, ClosedSet, PathCost, N) :-
 	new_fetch(Nodes, Queue, ClosedSet, N),
     write("Nodes: "), write(Nodes), nl,
-    writeln('Podaj kolejnosc wezlow'), nl,
+    writeln('Podaj kolejność węzłów'), nl,
     read(OrderList),
-    getNodeNumber(OrderList, NodeNumber),
-    getNElementOfList(Nodes, NodeNumber, Node),
+    get_order(OrderList, Index),
+    get_Nth_node(Nodes, Index, Node),
     write("---"),nl, 
     write("Aktualna kolejka: "), write(Queue), nl,
     write("POBIERAM WĘZEŁ: "), write(Node), nl,
@@ -80,19 +80,19 @@ del([Y|R],X,[Y|R1]) :-
 	X\=Y,
 	del(R,X,R1).
 
-getNodeNumber([Node | _], Node).
+get_order([Node | _], Node).
 
-getNodeNumber([_|List], Node) :-
-	getNodeNumber(List, Node).
+get_order([_|List], Node) :-
+	get_order(List, Node).
 
-getNElementOfList([], _, []).
+get_Nth_node([], _, []).
 
-getNElementOfList([_|List], NumberOfElement, Y) :-
-	NumberOfElement2 is NumberOfElement - 1,
-	NumberOfElement2 >= 1,
-	getNElementOfList(List, NumberOfElement2, Y).
+get_Nth_node([_|Rest], Index, First) :-
+	NextIndex is Index - 1,
+	NextIndex >= 1,
+	get_Nth_node(Rest, NextIndex, First).
 
-getNElementOfList([Y|_], 1, Y).
+get_Nth_node([First|_], 1, First).
 
 
 succ(a, ab, 2, b).
