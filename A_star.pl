@@ -6,7 +6,7 @@ start_A_star(InitState, PathCost, N) :-
 search_A_star(Queue, ClosedSet, PathCost, N) :-
 	new_fetch(Nodes, Queue, ClosedSet, N),
     write("Nodes: "), write(Nodes), nl,
-    writeln('Podaj kolejność węzłów'), nl,
+    writeln("Podaj kolejność węzłów"), nl,
     read(OrderList),
     get_order(OrderList, Index),
     get_Nth_node(Nodes, Index, Node),
